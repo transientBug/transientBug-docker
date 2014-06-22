@@ -1,0 +1,10 @@
+This is just a simple dockerfile to support running transientbug inside of a
+docker instance.
+
+For systems that docker isn't supported or a pain to use *cough*mac osx*cough*
+there is also a Vagrantfile provided that will setup a full Ubuntu 12.04 vm with
+docker installed. Inside of this vm you can then build the dockerfile and work
+like normal.
+
+The use of the Vagrant managed vm is highly recommened, as it most closely matches
+the current servers setup.

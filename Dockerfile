@@ -17,3 +17,6 @@ EXPOSE      29015
 
 # Redis
 EXPOSE      6379
+
+# Transientbug
+EXPOSE      80
