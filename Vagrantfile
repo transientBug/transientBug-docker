@@ -39,5 +39,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.provision "shell",
-    path: "vagrant_docker_provision.sh"
+    path: "vagrant_provision.sh"
 end

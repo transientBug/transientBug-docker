@@ -19,9 +19,7 @@ virt/
 .pylintrc
 
 .vagrant/
-
-ssl-unified.crt
-private.key
+transientbug/
 
 
 # Compiled source #
