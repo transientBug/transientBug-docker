@@ -2,7 +2,8 @@ FROM        ubuntu:12.10
 
 # Update and install rethinkdb and redis
 RUN         apt-get update
-RUN         source /etc/lsb-release && echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list
+RUN         source /etc/lsb-release && \
+              echo "deb http://download.rethinkdb.com/apt $DISTRIB_CODENAME main" | sudo tee /etc/apt/sources.list.d/rethinkdb.list
 RUN         wget -O- http://download.rethinkdb.com/apt/pubkey.gpg | sudo apt-key add -
 RUN         apt-get update
 RUN         apt-get -y install rethinkdb redis-server
@@ -20,3 +21,6 @@ EXPOSE      6379
 
 # Transientbug
 EXPOSE      80
+
+ADD         docker_provision.sh
+RUN         bash docker_provision.sh
