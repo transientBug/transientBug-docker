@@ -3,7 +3,7 @@ MAINTAINER Joshua Ashby "joshuaashby@joshashby.com"
 
 # update things and install nice things
 RUN         apt-get update
-RUN         apt-get -y install wget g++ curl libssl-dev apache2-utils git-core python python-pip python-dev
+RUN         apt-get -y install wget g++ curl libssl-dev apache2-utils git-core python python-pip python-dev libffi-dev
 
 RUN         mkdir /root/.ssh
 RUN         touch /root/.ssh/known_hosts
@@ -29,22 +29,36 @@ EXPOSE      6379
 RUN         apt-get -y install nginx
 
 EXPOSE      80
-EXPOSE      433
+EXPOSE      443
 
 
 # Node.js
 RUN         git clone git://github.com/joyent/node.git
-RUN         cd node; ./configure; make; make install
+WORKDIR     /node
+RUN         ./configure;
+RUN         make
+RUN         make install
 
 
-# Transientbug
+# Transientbug nginx
 RUN         mkdir /etc/nginx/transientbug
 ADD         transientbug/ /etc/nginx/transientbug
 ADD         nginx /etc/nginx/sites-available/transientbug
 RUN         ln -s /etc/nginx/sites-avalabled/transientbug /etc/nginx/sites-enabled/
 
-RUN         git clone git://github.com/transientBug/transientBug.git
-RUN         cd transientBug; npm install; pip install -r requirements.txt
+
+# Transientbug site and assets
+WORKDIR     /
+RUN         git clone git://github.com/transientBug/transientBug.git@dev
+WORKDIR     /transientBug
+RUN         npm install
+
+RUN         pip install -r requirements.txt
+RUN         ln -s /transientBug/app/config/live/config_dev.yaml /transientBug/app/config/config.yaml
+RUN         ln -s /transientBug/app/config/live/initial_dev.yaml /transientBug/app/config/initial.yaml
+
+RUN         ./node_modules/grunt-cli/bin/grunt
+RUN         cp -r interface/build/* /var/www/
 
 #ADD         docker_provision.sh docker_provision.sh
 #RUN         chmod +x docker_provision.sh
