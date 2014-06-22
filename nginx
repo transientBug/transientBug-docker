@@ -1,0 +1,57 @@
+server {
+    listen 80;
+    server_name www.transientbug.net transientbug.net;
+
+    return 301 https://transientbug.com$request_uri;
+}
+
+server {
+    listen 80;
+    server_name www.transientbug.com transientbug.com;
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen   443;
+    server_name www.transientbug.com transientbug.com;
+
+    ssl    on;
+    ssl_certificate    /etc/nginx/transientbug/ssl-unified.crt;
+    ssl_certificate_key /etc/nginx/transientbug/private.key;
+
+    access_log /var/log/nginx/transientbug.access.log;
+    error_log /var/log/nginx/transientbug.error.log;
+
+    root /var/www/transientbug/html;
+    index index.html;
+
+    error_page 502 503 /static/502.html;
+
+    client_max_body_size 10M;
+
+    server_tokens off;
+    proxy_pass_header Server;
+    proxy_pass_header Connection;
+    proxy_set_header Host $http_host;
+    proxy_set_header Connection close;
+    proxy_set_header X-Real-IP $remote_addr;
+
+    location / {
+        try_files $uri $uri/ @proxy;
+    }
+
+    location = / {
+         proxy_pass http://127.0.0.1:8000;
+    }
+
+    location ~ /static {
+    }
+
+    location ~ /zohoverify {
+    }
+
+    location @proxy {
+         proxy_pass http://127.0.0.1:8000;
+    }
+}
