@@ -1,16 +1,16 @@
-FROM        ubuntu:12.10
+FROM        ubuntu
 MAINTAINER Joshua Ashby "joshuaashby@joshashby.com"
 
 # update things and install nice things
 RUN         apt-get update
 RUN         apt-get -y install wget g++ curl libssl-dev apache2-utils git-core python python-pip python-dev libffi-dev
 
-RUN         mkdir /root/.ssh
-RUN         touch /root/.ssh/known_hosts
-RUN         ssh-keyscan github.com >> /root/.ssh/known_hosts
+#RUN         mkdir /root/.ssh
+#RUN         touch /root/.ssh/known_hosts
+#RUN         ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 # RethinkDB
-RUN         echo "deb http://download.rethinkdb.com/apt precise main" | tee /etc/apt/sources.list.d/rethinkdb.list
+RUN         echo "deb http://download.rethinkdb.com/apt trusty main" | tee /etc/apt/sources.list.d/rethinkdb.list
 RUN         wget -O- http://download.rethinkdb.com/apt/pubkey.gpg | apt-key add -
 RUN         apt-get update
 RUN         apt-get -y install rethinkdb
@@ -39,6 +39,8 @@ RUN         ./configure;
 RUN         make
 RUN         make install
 
+RUN         mkdir /transientBug
+WORKDIR     /transientBug
 
 # Transientbug nginx
 RUN         mkdir /etc/nginx/transientbug
@@ -48,17 +50,32 @@ RUN         ln -s /etc/nginx/sites-avalabled/transientbug /etc/nginx/sites-enabl
 
 
 # Transientbug site and assets
-WORKDIR     /
-RUN         git clone git://github.com/transientBug/transientBug.git@dev
-WORKDIR     /transientBug
-RUN         npm install
+RUN         mkdir /var/www
 
+RUN         git clone git://github.com/transientBug/transientBug.git /transientBug
+RUN         git checkout dev
+RUN         npm install
 RUN         pip install -r requirements.txt
-RUN         ln -s /transientBug/app/config/live/config_dev.yaml /transientBug/app/config/config.yaml
-RUN         ln -s /transientBug/app/config/live/initial_dev.yaml /transientBug/app/config/initial.yaml
+
+RUN         ln -s /transientBug/app/config/live/config_live.yaml /transientBug/app/config/config.yaml
+RUN         ln -s /transientBug/app/config/live/initial_live.yaml /transientBug/app/config/initial.yaml
 
 RUN         ./node_modules/grunt-cli/bin/grunt
-RUN         cp -r interface/build/* /var/www/
+RUN         cp -r interface/build/* /var/www
+
+# add the rethink config
+ADD         rethinkdb.config /etx/rethinkdb/instances.d/default.config
+
+# Start the services we need for transientbug
+RUN         service rethinkdb start
+RUN         service redis-server start
+RUN         service nginx start
+
+ADD         /backups /backups
+WORKDIR     /backups
+RUN         rethinkdb restore db_backup.tar.gz
+RUN         mkdir /var/www/i
+RUN         tar -xvzf image_backup.tar.gz -C /var/www/i/
 
 #ADD         docker_provision.sh docker_provision.sh
 #RUN         chmod +x docker_provision.sh
