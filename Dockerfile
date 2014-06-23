@@ -32,25 +32,35 @@ EXPOSE      80
 EXPOSE      443
 
 
-# Node.js
+# build node.js because ubuntu can't keep things updated
 RUN         git clone git://github.com/joyent/node.git
 WORKDIR     /node
 RUN         ./configure;
 RUN         make
 RUN         make install
 
-RUN         mkdir /transientBug
-WORKDIR     /transientBug
+
+# Start all the services
+# add the rethink config
+ADD         rethinkdb.conf /etx/rethinkdb/instances.d/instance1.conf
 
 # Transientbug nginx
-RUN         mkdir /etc/nginx/transientbug
 ADD         transientbug/ /etc/nginx/transientbug
 ADD         nginx /etc/nginx/sites-available/transientbug
 RUN         ln -s /etc/nginx/sites-avalabled/transientbug /etc/nginx/sites-enabled/
 
+# Start the services we need for transientbug
+RUN         service rethinkdb start
+RUN         service redis-server start
+RUN         service nginx start
+
 
 # Transientbug site and assets
 RUN         mkdir /var/www
+RUN         mkdir /var/www/i
+
+RUN         mkdir /transientBug
+WORKDIR     /transientBug
 
 RUN         git clone git://github.com/transientBug/transientBug.git /transientBug
 RUN         git checkout dev
@@ -63,20 +73,7 @@ RUN         ln -s /transientBug/app/config/live/initial_live.yaml /transientBug/
 RUN         ./node_modules/grunt-cli/bin/grunt
 RUN         cp -r interface/build/* /var/www
 
-# add the rethink config
-ADD         rethinkdb.config /etx/rethinkdb/instances.d/default.config
-
-# Start the services we need for transientbug
-RUN         service rethinkdb start
-RUN         service redis-server start
-RUN         service nginx start
-
 ADD         /backups /backups
 WORKDIR     /backups
 RUN         rethinkdb restore db_backup.tar.gz
-RUN         mkdir /var/www/i
 RUN         tar -xvzf image_backup.tar.gz -C /var/www/i/
-
-#ADD         docker_provision.sh docker_provision.sh
-#RUN         chmod +x docker_provision.sh
-#RUN         ./docker_provision.sh
