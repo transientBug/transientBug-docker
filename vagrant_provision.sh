@@ -40,10 +40,8 @@ service nginx start
 # Transientbug stuff
 mkdir /var/www
 mkdir /var/www/static
-mkdir /var/www/scrn
 
 chown -R vagrant:vagrant /transientBug
-chown -R vagrant:vagrant /var/www/
 
 mkdir /transientBug
 cd /transientBug
@@ -62,5 +60,6 @@ cp -r interface/build/* /var/www/static
 cd /vagrant/backups
 # Restore things
 rethinkdb restore db_backup.tar.gz
-tar -xvzf image_backup.tar.gz -C /var/www/i/
-tar -xvzf scrn_backup.tar.gz -C /var/www/scrn/
+tar -xvzf static_backup.tar.gz -C /var/www/
+
+chown -R vagrant:vagrant /var/www/
