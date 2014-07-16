@@ -40,13 +40,20 @@ RUN         make
 RUN         make install
 
 
-# Start all the services
 # add the rethink config
-ADD         rethinkdb.conf /etx/rethinkdb/instances.d/instance1.conf
+VOLUME      /data
+
+RUN         chown rethinkdb:rethinkdb /data
+RUN         chmod u+rwx /data
+
+ADD         rethinkdb.conf /etc/rethinkdb/instances.d/instance1.conf
 
 # Transientbug nginx
+VOLUME      /var/www
+
 ADD         transientbug/ /etc/nginx/transientbug
 ADD         nginx /etc/nginx/sites-available/transientbug
+
 RUN         ln -s /etc/nginx/sites-avalabled/transientbug /etc/nginx/sites-enabled/
 
 # Start the services we need for transientbug
@@ -56,7 +63,6 @@ RUN         service nginx start
 
 
 # Transientbug site and assets
-RUN         mkdir /var/www
 RUN         mkdir /var/www/i
 
 RUN         mkdir /transientBug
