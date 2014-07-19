@@ -20,6 +20,7 @@ virt/
 
 .vagrant/
 transientbug/
+ssl/
 backups/
 
 

@@ -25,7 +25,7 @@ cd /vagrant
 cp rethinkdb.conf /etc/rethinkdb/instances.d/instance1.conf
 
 # Transientbug nginx
-cp -r transientbug/ /etc/nginx/transientbug
+cp -r ssl/ /etc/nginx/transientbug
 cp nginx /etc/nginx/sites-available/transientbug
 
 ln -s /etc/nginx/sites-avalabled/transientbug /etc/nginx/sites-enabled/transientbug
@@ -42,18 +42,14 @@ mkdir /var/www
 chown -R vagrant:vagrant /var/www/
 sudo -H -u vagrant mkdir /var/www/static
 
-mkdir /transientBug
-chown -R vagrant:vagrant /transientBug
-sudo -H -u vagrant git clone git://github.com/transientBug/transientBug.git /transientBug
-
-cd /transientbug
+cd transientbug
 
 sudo -H -u vagrant git checkout dev
 sudo -H -u vagrant npm install
 sudo -H -u vagrant pip install -r requirements.txt --upgrade
 
-sudo -H -u vagrant ln -s /transientBug/app/config/live/config_live.yaml /transientBug/app/config/config.yaml
-sudo -H -u vagrant ln -s /transientBug/app/config/live/initial_live.yaml /transientBug/app/config/initial.yaml
+sudo -H -u vagrant ln -s /vagrant/transientBug/app/config/live/config_live.yaml /vagrant/transientBug/app/config/config.yaml
+sudo -H -u vagrant ln -s /vagrant/transientBug/app/config/live/initial_live.yaml /vagrant/transientBug/app/config/initial.yaml
 
 sudo -H -u vagrant ./node_modules/grunt-cli/bin/grunt
 sudo -H -u vagrant cp -r interface/build/* /var/www/static
@@ -64,4 +60,7 @@ sudo -H -u vagrant mkdir app/pid
 cd /vagrant/backups
 # Restore things
 rethinkdb restore db_backup.tar.gz
-sudo -H -u vagrant tar -xzf static_backup.tar.gz -C /var/www/
+sudo -H -u vagrant mkdir tmp
+sudo -H -u vagrant tar -xzf static_backup.tar.gz -C tmp/
+sudo -H -u vagrant mv tmp/var/www/transientbug/html/{i,scrn} /var/www/
+sudo -H -u vagrant rm -rf tmp
