@@ -5,7 +5,7 @@ wget -O- http://download.rethinkdb.com/apt/pubkey.gpg | apt-key add -
 apt-get update
 
 # Rethink, redis, nginx, docker and python and git
-apt-get -y install wget g++ curl libssl-dev make apache2-utils git-core python python-pip python-dev libffi-dev rethinkdb redis-server nginx
+apt-get -y install wget g++ curl libssl-dev make apache2-utils git-core python python-pip python-dev libffi-dev rethinkdb redis-server nginx vim
 
 curl https://get.docker.io/ubuntu/ | sh
 usermod -aG docker vagrant
@@ -39,27 +39,29 @@ service nginx start
 
 # Transientbug stuff
 mkdir /var/www
-mkdir /var/www/static
-
-chown -R vagrant:vagrant /transientBug
+chown -R vagrant:vagrant /var/www/
+sudo -H -u vagrant mkdir /var/www/static
 
 mkdir /transientBug
-cd /transientBug
+chown -R vagrant:vagrant /transientBug
+sudo -H -u vagrant git clone git://github.com/transientBug/transientBug.git /transientBug
 
-git clone git://github.com/transientBug/transientBug.git /transientBug
-git checkout master
-npm install
-pip install -r requirements.txt
+cd /transientbug
 
-ln -s /transientBug/app/config/live/config_live.yaml /transientBug/app/config/config.yaml
-ln -s /transientBug/app/config/live/initial_live.yaml /transientBug/app/config/initial.yaml
+sudo -H -u vagrant git checkout dev
+sudo -H -u vagrant npm install
+sudo -H -u vagrant pip install -r requirements.txt --upgrade
 
-./node_modules/grunt-cli/bin/grunt
-cp -r interface/build/* /var/www/static
+sudo -H -u vagrant ln -s /transientBug/app/config/live/config_live.yaml /transientBug/app/config/config.yaml
+sudo -H -u vagrant ln -s /transientBug/app/config/live/initial_live.yaml /transientBug/app/config/initial.yaml
+
+sudo -H -u vagrant ./node_modules/grunt-cli/bin/grunt
+sudo -H -u vagrant cp -r interface/build/* /var/www/static
+
+sudo -H -u vagrant mkdir app/logs
+sudo -H -u vagrant mkdir app/pid
 
 cd /vagrant/backups
 # Restore things
 rethinkdb restore db_backup.tar.gz
-tar -xvzf static_backup.tar.gz -C /var/www/
-
-chown -R vagrant:vagrant /var/www/
+sudo -H -u vagrant tar -xzf static_backup.tar.gz -C /var/www/
