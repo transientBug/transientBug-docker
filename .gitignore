@@ -19,9 +19,10 @@ virt/
 .pylintrc
 
 .vagrant/
-transientbug/
+transientBug/
 ssl/
 backups/
+node/
 
 
 # Compiled source #

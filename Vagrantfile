@@ -37,7 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                   "--memory", "1024"]
   end
 
-  config.vm.synced_folder "src/", "/transientBug"
+  config.vm.synced_folder "../transientBug", "/transientBug"
 
   config.vm.provision "shell",
     path: "vagrant_provision.sh"
